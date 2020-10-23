@@ -67,12 +67,6 @@ To get **conjungo**: *Fork notes: I'm scared to set a version tag right now, I d
 go get github.com/dionysius/conjungo@master
 ```
 
-We recommend that you vendor it within your project. We chose to use govendor.
-
-```sh 
-govendor fetch github.com/dionysius/conjungo
-```
-
 ## Usage
 ### Simple Merge
 Merge two structs together:
@@ -120,6 +114,9 @@ results in:
 ### Options
 **Overwrite** `bool`  
 If true, overwrite a target value with source value even if it already exists
+
+**IgnoreEmpty** `bool`
+Ignore source if it is zero. Might be useful with Overwrite if you want to only merge non-zero values.
 
 **ErrorOnUnexported** `bool`  
 Unexported fields on a struct can not be set. When a struct contains an unexported
