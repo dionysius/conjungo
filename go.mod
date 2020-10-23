@@ -1,4 +1,4 @@
-module github.com/InVisionApp/conjungo
+module github.com/dionysius/conjungo
 
 go 1.13
 
