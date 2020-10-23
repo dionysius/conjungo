@@ -2,12 +2,24 @@
 
 # conjungo
 
+This is a **hard fork** of [InVisionApp/conjungo](https://github.com/InVisionApp/conjungo) where [all my suggested PRs](https://github.com/InVisionApp/conjungo/pulls/dionysius) are merged *and the `import` path updated*. The branch `upstream` represents the original upstream state, where `master` contains all the merges.
+
+**I don't plan to actively maintain this repo**, i needed those features myself. The last change of upstream has been a while ago. Lets see where this leads to and if my PRs get picked up.
+
+I found this project while I had an [issue with mergo](https://github.com/imdario/mergo/issues/167). While trying to help myself, I gave up and looked for an alternative. And I have to say, conjungo is really flexible, the concept is solid - I just found some parts it was missing.
+
+Right now I kept the usage API the same (it also doesn't match exactly what the readme says) but I can see some improvements there as well. So you should be able to easily switch to this fork and back to the original.
+
+---
+
+From now on the original readme with the current requirements
+
 [![LICENSE](https://img.shields.io/badge/license-MIT-orange.svg)](LICENSE)
-[![Golang](https://img.shields.io/badge/Golang-v1.7-blue.svg)](https://golang.org/dl/)
-[![Godocs](https://img.shields.io/badge/golang-documentation-blue.svg)](https://godoc.org/github.com/InVisionApp/conjungo)
-[![Go Report Card](https://goreportcard.com/badge/github.com/InVisionApp/conjungo)](https://goreportcard.com/report/github.com/InVisionApp/conjungo)
-[![Travis Build Status](https://travis-ci.com/InVisionApp/conjungo.svg?token=KosA43m1X3ikri8JEukQ&branch=master)](https://travis-ci.com/InVisionApp/conjungo) 
-[![codecov](https://codecov.io/gh/InVisionApp/conjungo/branch/master/graph/badge.svg?token=lesB1PUEtL)](https://codecov.io/gh/InVisionApp/conjungo)
+[![Golang](https://img.shields.io/badge/Golang-v1.13-blue.svg)](https://golang.org/dl/)
+[![Godocs](https://img.shields.io/badge/golang-documentation-blue.svg)](https://godoc.org/github.com/dionysius/conjungo)
+[![Build Status](https://github.com/dionysius/conjungo/workflows/build/badge.svg?branch=master)](https://github.com/dionysius/conjungo/actions?query=workflow:build+branch:master)
+[![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/dionysius/conjungo)](https://github.com/dionysius/conjungo/releases)
+[![Go Report Card](https://goreportcard.com/badge/github.com/dionysius/conjungo)](https://goreportcard.com/report/github.com/dionysius/conjungo)
 
 A merge utility designed for flexibility and customizability. The library has a
 single simple point of entry that works out of the box for most basic use cases. 
@@ -52,13 +64,13 @@ problems by allowing custom functions to be defined to handle each type.
 ## Setup
 To get **conjungo**:
 ```sh
-go get github.com/InVisionApp/conjungo
+go get github.com/dionysius/conjungo
 ```
 
 We recommend that you vendor it within your project. We chose to use govendor.
 
 ```sh 
-govendor fetch github.com/InVisionApp/conjungo
+govendor fetch github.com/dionysius/conjungo
 ```
 
 ## Usage
