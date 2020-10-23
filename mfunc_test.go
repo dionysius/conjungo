@@ -905,9 +905,17 @@ var _ = Describe("mergeStruct", func() {
 		})
 
 		Context("pointer fields", func() {
+			type specialString string
+
+			type Obj struct {
+				Name specialString
+			}
+
 			type Baz struct {
-				Ptr   *string
-				Slice *[]interface{}
+				Ptr    *string
+				Slice  *[]interface{}
+				Struct *Obj
+				Bytes  []byte
 			}
 
 			var targetBaz, sourceBaz Baz
@@ -917,12 +925,16 @@ var _ = Describe("mergeStruct", func() {
 				t := "target"
 				s := "source"
 				targetBaz = Baz{
-					Ptr:   &t,
-					Slice: &[]interface{}{"unchanged", 0},
+					Ptr:    &t,
+					Slice:  &[]interface{}{"unchanged", 0},
+					Struct: &Obj{Name: "target"},
+					Bytes:  []byte("target"),
 				}
 				sourceBaz = Baz{
-					Ptr:   &s,
-					Slice: &[]interface{}{"added", 1},
+					Ptr:    &s,
+					Slice:  &[]interface{}{"added", 1},
+					Struct: &Obj{Name: "source"},
+					Bytes:  []byte("source"),
 				}
 			})
 
@@ -932,7 +944,13 @@ var _ = Describe("mergeStruct", func() {
 			})
 
 			It("handles them properly", func() {
-				merged, err := mergeStruct(targetBazVal, sourceBazVal, NewOptions())
+				opts := NewOptions()
+				opts.SetTypeMergeFunc(reflect.TypeOf(specialString("")),
+					func(t, s reflect.Value, o *Options) (reflect.Value, error) {
+						return reflect.ValueOf(specialString("merge")), nil
+					},
+				)
+				merged, err := mergeStruct(targetBazVal, sourceBazVal, opts)
 				Expect(err).ToNot(HaveOccurred())
 				mergedStruct, ok := merged.Interface().(Baz)
 				Expect(ok).To(BeTrue())
@@ -941,6 +959,8 @@ var _ = Describe("mergeStruct", func() {
 					ContainElement("added"),
 					ContainElement(1),
 				))
+				Expect((*mergedStruct.Struct).Name).To(Equal(specialString("merge")))
+				Expect(mergedStruct.Bytes).To(Equal([]byte("targetsource")))
 			})
 
 			Context("source field is nil", func() {
