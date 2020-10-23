@@ -18,7 +18,6 @@ From now on the original readme with the current requirements
 [![Golang](https://img.shields.io/badge/Golang-v1.13-blue.svg)](https://golang.org/dl/)
 [![Godocs](https://img.shields.io/badge/golang-documentation-blue.svg)](https://godoc.org/github.com/dionysius/conjungo)
 [![Build Status](https://github.com/dionysius/conjungo/workflows/build/badge.svg?branch=master)](https://github.com/dionysius/conjungo/actions?query=workflow:build+branch:master)
-[![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/dionysius/conjungo)](https://github.com/dionysius/conjungo/releases)
 [![Go Report Card](https://goreportcard.com/badge/github.com/dionysius/conjungo)](https://goreportcard.com/report/github.com/dionysius/conjungo)
 
 A merge utility designed for flexibility and customizability. The library has a
