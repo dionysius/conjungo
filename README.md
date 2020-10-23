@@ -100,7 +100,7 @@ sourceStruct := Foo{
 
 err := conjungo.Merge(&targetStruct, sourceStruct, nil)
 if err != nil {
-	log.Error(err)
+	fmt.Print(err)
 }
 ```
 results in:
@@ -146,7 +146,7 @@ y := 2
 
 err := conjungo.Merge(&x, y, opts)
 if err != nil {
-	log.Error(err)
+	fmt.Print(err)
 }
 
 // x == 3
