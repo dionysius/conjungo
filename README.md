@@ -62,9 +62,9 @@ that needed to be appended but also deduped. Conjungo solves these types of
 problems by allowing custom functions to be defined to handle each type.
 
 ## Setup
-To get **conjungo**:
+To get **conjungo**: *Fork notes: I'm scared to set a version tag right now, I don't want to conflict upstream, use master branch for now*
 ```sh
-go get github.com/dionysius/conjungo
+go get github.com/dionysius/conjungo@master
 ```
 
 We recommend that you vendor it within your project. We chose to use govendor.
