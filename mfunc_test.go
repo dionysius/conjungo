@@ -1405,3 +1405,219 @@ var _ = Describe("mergeStruct", func() {
 		})
 	})
 })
+
+var _ = Describe("mergeSliceByField_merge", func() {
+	type elem struct {
+		Key   string
+		Value string
+	}
+
+	var (
+		targetSlice, sourceSlice       []elem
+		targetSliceVal, sourceSliceVal reflect.Value
+		opts                           *Options
+	)
+
+	BeforeEach(func() {
+		targetSlice = []elem{{"both", "fromtarget"}, {"onlytarget", "fromtarget"}}
+		sourceSlice = []elem{{"both", "fromsource"}, {"onlysource", "fromsource"}}
+		opts = NewOptions()
+		opts.SetTypeMergeFunc(reflect.TypeOf([]elem{}), MergeSliceByField("Key"))
+	})
+
+	JustBeforeEach(func() {
+		targetSliceVal = reflect.ValueOf(targetSlice)
+		sourceSliceVal = reflect.ValueOf(sourceSlice)
+	})
+
+	Context("two populated slices", func() {
+		It("merges them", func() {
+			merged, err := merge(targetSliceVal, sourceSliceVal, opts)
+			Expect(err).ToNot(HaveOccurred())
+
+			mergedSlice, ok := merged.Interface().([]elem)
+			Expect(ok).To(BeTrue())
+
+			expSlice := append([]elem{}, sourceSlice[0], targetSlice[1], sourceSlice[1])
+			Expect(mergedSlice).To(Equal(expSlice))
+		})
+	})
+
+	Context("target slice is empty", func() {
+		BeforeEach(func() {
+			targetSlice = []elem{}
+		})
+
+		It("equals source", func() {
+			merged, err := merge(targetSliceVal, sourceSliceVal, opts)
+			Expect(err).ToNot(HaveOccurred())
+
+			mergedSlice, ok := merged.Interface().([]elem)
+			Expect(ok).To(BeTrue())
+
+			Expect(mergedSlice).To(Equal(sourceSlice))
+		})
+	})
+
+	Context("source slice is empty", func() {
+		BeforeEach(func() {
+			sourceSlice = []elem{}
+		})
+
+		It("equals target", func() {
+			merged, err := merge(targetSliceVal, sourceSliceVal, opts)
+			Expect(err).ToNot(HaveOccurred())
+
+			mergedSlice, ok := merged.Interface().([]elem)
+			Expect(ok).To(BeTrue())
+
+			Expect(mergedSlice).To(Equal(targetSlice))
+		})
+	})
+
+	Context("both slices are empty", func() {
+		BeforeEach(func() {
+			targetSlice = []elem{}
+			sourceSlice = []elem{}
+		})
+
+		It("returns empty slice", func() {
+			merged, err := merge(targetSliceVal, sourceSliceVal, opts)
+			Expect(err).ToNot(HaveOccurred())
+
+			mergedSlice, ok := merged.Interface().([]elem)
+			Expect(ok).To(BeTrue())
+
+			Expect(mergedSlice).To(BeEmpty())
+		})
+	})
+
+	Context("nil values", func() {
+		// these are called via merge() because that is what does the nil checks
+		By("call via merge()")
+
+		Context("target val is nil", func() {
+			JustBeforeEach(func() {
+				targetSliceVal = reflect.Value{}
+			})
+
+			It("equals source", func() {
+				merged, err := merge(targetSliceVal, sourceSliceVal, opts)
+				Expect(err).ToNot(HaveOccurred())
+
+				mergedSlice, ok := merged.Interface().([]elem)
+				Expect(ok).To(BeTrue())
+
+				Expect(mergedSlice).To(Equal(sourceSlice))
+			})
+		})
+
+		Context("nil slice target", func() {
+			It("equals source", func() {
+				var m []elem
+				targetSliceVal = reflect.ValueOf(m)
+				merged, err := merge(targetSliceVal, sourceSliceVal, opts)
+
+				Expect(err).ToNot(HaveOccurred())
+				Expect(merged.Interface()).To(Equal(sourceSlice))
+			})
+		})
+
+		Context("source slice is nil", func() {
+			JustBeforeEach(func() {
+				sourceSliceVal = reflect.Value{}
+			})
+
+			It("equals target", func() {
+				merged, err := merge(targetSliceVal, sourceSliceVal, opts)
+				Expect(err).ToNot(HaveOccurred())
+
+				mergedSlice, ok := merged.Interface().([]elem)
+				Expect(ok).To(BeTrue())
+
+				Expect(mergedSlice).To(Equal(targetSlice))
+			})
+		})
+
+		Context("both slices are nil", func() {
+			JustBeforeEach(func() {
+				targetSliceVal = reflect.Value{}
+				sourceSliceVal = reflect.Value{}
+			})
+
+			It("returns empty slice", func() {
+				merged, err := merge(targetSliceVal, sourceSliceVal, opts)
+				Expect(err).ToNot(HaveOccurred())
+
+				Expect(merged.IsValid()).ToNot(BeTrue())
+			})
+		})
+
+	})
+})
+
+// func TestMergeSliceByStructField_merge(t *testing.T) {
+// 	dst := reflect.ValueOf([]*service.AssignedFlag{
+// 		{
+// 			Flag: service.Flag{
+// 				Key:  "both",
+// 				From: "dst",
+// 			},
+// 		},
+// 		{
+// 			Flag: service.Flag{
+// 				Key:  "onlydst",
+// 				From: "dst",
+// 			},
+// 		},
+// 	})
+
+// 	src := reflect.ValueOf([]*service.AssignedFlag{
+// 		{
+// 			Flag: service.Flag{
+// 				Key:  "both",
+// 				From: "src",
+// 			},
+// 		},
+// 		{
+// 			Flag: service.Flag{
+// 				Key:  "onlysrc",
+// 				From: "src",
+// 			},
+// 		},
+// 	})
+
+// 	exp := reflect.ValueOf([]*service.AssignedFlag{
+// 		{
+// 			Flag: service.Flag{
+// 				Key:  "both",
+// 				From: "src",
+// 			},
+// 		},
+// 		{
+// 			Flag: service.Flag{
+// 				Key:  "onlydst",
+// 				From: "dst",
+// 			},
+// 		},
+// 		{
+// 			Flag: service.Flag{
+// 				Key:  "onlysrc",
+// 				From: "src",
+// 			},
+// 		},
+// 	})
+
+// 	m := MergeSliceByStructField{
+// 		Field: "Key",
+// 	}
+
+// 	opts := conjungo.NewOptions()
+// 	opts.Overwrite = true
+// 	opts.IgnoreEmpty = true
+
+// 	res, err := m.merge(dst, src, opts)
+// 	assert.NoError(t, err)
+
+// 	assert.Exactly(t, exp.Interface(), res.Interface())
+// }
