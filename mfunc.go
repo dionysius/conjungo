@@ -238,3 +238,75 @@ func mergePtr(t, s reflect.Value, o *Options) (reflect.Value, error) {
 
 	return newT, nil
 }
+
+// Custom func helper to merge a slice by a specific field. The caller needs to make sure this field value is unique
+// across the slice. Intended to be used to construct a type specific merge func to be added to the options.
+func MergeSliceByField(field string) func(t, s reflect.Value, o *Options) (reflect.Value, error) {
+	m := mergeSliceByField{field: field}
+
+	return m.merge
+}
+
+type mergeSliceByField struct {
+	field string
+}
+
+// nolint: goerr113, nestif, cognit
+func (m mergeSliceByField) merge(t, s reflect.Value, o *Options) (reflect.Value, error) {
+	// Test that dst kind is a slice
+	if t.Kind() != reflect.Slice {
+		return reflect.Value{}, fmt.Errorf("kind %v is not a slice", t.Kind())
+	}
+
+	// Test that elements kind is a struct. Allowed to be a pointer to a struct
+	if t.Type().Elem().Kind() == reflect.Ptr {
+		if t.Type().Elem().Elem().Kind() != reflect.Struct {
+			return reflect.Value{}, fmt.Errorf("element kind %v is not a pointer to a struct", t.Type().Elem().Elem().Kind())
+		}
+	} else if t.Type().Elem().Kind() != reflect.Struct {
+		return reflect.Value{}, fmt.Errorf("element kind %v is not a struct", t.Type().Elem().Kind())
+	}
+
+	// Test that elements kind has even the provided field. Allowed to be a pointer to a struct
+	if t.Type().Elem().Kind() == reflect.Ptr {
+		if _, ok := t.Type().Elem().Elem().FieldByName(m.field); !ok {
+			return reflect.Value{}, fmt.Errorf("field %v of pointer to element type %v does not exist", m.field, t.Type().Elem().Elem())
+		}
+	} else if _, ok := t.Type().Elem().FieldByName(m.field); !ok {
+		return reflect.Value{}, fmt.Errorf("field %v of element type %v does not exist", m.field, t.Type().Elem())
+	}
+
+	// Loop through both slices and try to find the field matching
+Next:
+	for i := 0; i < s.Len(); i++ {
+		for j := 0; j < t.Len(); j++ {
+			// Different equation when elem is a Ptr or not
+			if t.Type().Elem().Kind() == reflect.Ptr {
+				if t.Index(j).Elem().FieldByName(m.field).Interface() == s.Index(i).Elem().FieldByName(m.field).Interface() {
+					merged, err := merge(t.Index(j), s.Index(i), o)
+					if err != nil {
+						return reflect.Value{}, err
+					}
+
+					t.Index(j).Set(merged)
+
+					continue Next
+				}
+			} else if t.Index(j).FieldByName(m.field).Interface() == s.Index(i).FieldByName(m.field).Interface() {
+				merged, err := merge(t.Index(j), s.Index(i), o)
+				if err != nil {
+					return reflect.Value{}, err
+				}
+
+				t.Index(j).Set(merged)
+
+				continue Next
+			}
+		}
+
+		// If never continued to Next, it is never found
+		t = reflect.Append(t, s.Index(i))
+	}
+
+	return t, nil
+}
