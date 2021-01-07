@@ -291,7 +291,8 @@ Next:
 				elemValS = s.Index(i)
 			}
 
-			if elemValT.FieldByName(m.field).Interface() == elemValS.FieldByName(m.field).Interface() {
+			// TODO: we could also check if the type implements comparabale, so we don't have to deep equal, which would be faster for those types
+			if reflect.DeepEqual(elemValT.FieldByName(m.field).Interface(), elemValS.FieldByName(m.field).Interface()) {
 				// Intentionally we use the real index value again, as merge() is capable of taking a ptr or struct
 				merged, err := merge(t.Index(j), s.Index(i), o)
 				if err != nil {
